@@ -39,6 +39,7 @@ export const getFeedback = asyncHandler(async (req, res) => {
 
 export const getFeedbackAdmin = asyncHandler(async (req, res) => {
   try {
+    console.log('asdasdasdasdasd')
     let { sorting, page, limit } = req.query;
     page = page || 1;
     limit = limit || 15;
@@ -54,7 +55,7 @@ export const getFeedbackAdmin = asyncHandler(async (req, res) => {
     res.json(feedback)
   } catch (error) {
     res.status(400)
-    throw new Error('Продукт не найден', error)
+    throw new Error('Отзывы не найдены', error)
   }
 })
 

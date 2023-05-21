@@ -23,6 +23,34 @@ export const createFavouriteProduct = asyncHandler(async (req, res) => {
   }
 })
 
+export const addFavouriteProduct = asyncHandler(async (req, res) => {
+  try {
+    const idArr = req.body;
+    const { userId } = req.user;
+    let arrFavouriteProduct = []
+
+    const favourite = await Favourite.findOne({
+      where: { userDatumId: userId }
+    })
+
+    idArr.forEach(id => arrFavouriteProduct.push({
+      productId: id, favouriteDatumId: favourite.id
+    }));
+
+    await FavouriteProduct.bulkCreate(arrFavouriteProduct)
+
+    const favourite_product = await FavouriteProduct.findAll({
+      where: { favouriteDatumId: favourite.id }
+    })
+
+    res.json(favourite_product)
+  } catch (error) { 
+    res.status(400)
+    throw new Error(error)
+  }
+})
+
+
 export const getFavouriteProducts = asyncHandler(async (req, res) => {
   try {
     const { userId } = req.user;

@@ -22,6 +22,33 @@ export const createBasketProduct = asyncHandler(async (req, res) => {
   }
 })
 
+export const addBasketProducts = asyncHandler(async (req, res) => {
+  try {
+    const idArr = req.body;
+    const { userId } = req.user;
+    let arrBasketProduct = []
+
+    const basket = await Basket.findOne({
+      where: { userDatumId: userId }
+    })
+
+    idArr.forEach(id => arrBasketProduct.push({
+      productId: id, basketDatumId: basket.id
+    }));
+
+    await BasketProduct.bulkCreate(arrBasketProduct)
+
+    const basket_product = await BasketProduct.findAll({
+      where: { basketDatumId: basket.id }
+    })
+
+    res.json(basket_product)
+  } catch (error) {
+    res.status(400)
+    throw new Error(error)
+  }
+})
+
 export const getBasketProducts = asyncHandler(async (req, res) => {
   try {
     const { userId } = req.user;

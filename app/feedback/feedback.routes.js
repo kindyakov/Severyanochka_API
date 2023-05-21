@@ -8,13 +8,13 @@ router.route('')
   .post(createFeedback)
   .get(roleProtect('admin'), getFeedback)
 
-router.route('/:id')
-  .get(getFeedbackProduct)
-
 router.route('/admin')
   .get(roleProtect('admin'), getFeedbackAdmin)
 
 router.route('/delete')
   .post(roleProtect('admin'), deleteFeedback)
+
+router.route('/:id')
+  .get(getFeedbackProduct)
 
 export default router

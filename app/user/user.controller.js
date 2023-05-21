@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt'
 import path from 'path'
 import { User, Basket, Favourite, BasketProduct, FavouriteProduct } from '../models/models.js';
 import { generateToken } from './generate-token.js';
+import jwt from 'jsonwebtoken'
 
 const __dirname = path.resolve()
 const quantityHashPass = 5;
@@ -20,7 +21,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
     if (user && isValidPassword) {
       const token = generateToken(user.id, user.phone, user.role)
-      res.json({ token })
+      res.json(token)
     } else {
       res.status(400)
       throw new Error('Телефон или пароль неверный')
@@ -33,14 +34,14 @@ export const loginUser = asyncHandler(async (req, res) => {
 
 export const registerUser = asyncHandler(async (req, res) => {
   try {
-    const { phone, surname, name, password, date_birth, region, city, gender, email, card_discount, role } = req.body;
+    let user_data = req.body;
 
-    if (!phone || !password) {
+    if (!user_data.phone || !user_data.password) {
       res.status(400)
       throw new Error('Некорректный телефон или пароль')
     }
     const isHaveUser = await User.findOne({
-      where: { phone }
+      where: { phone: user_data.phone }
     })
 
     if (isHaveUser) {
@@ -48,17 +49,13 @@ export const registerUser = asyncHandler(async (req, res) => {
       throw new Error('Такой пользователь уже зарегестрирован')
     }
 
-    const hashPassword = await bcrypt.hash(password, quantityHashPass)
-    const user = await User.create({
-      phone, surname, name,
-      password: hashPassword,
-      date_birth, region, city,
-      gender, email, card_discount, role
-    })
+    const hashPassword = await bcrypt.hash(user_data.password, quantityHashPass)
+    user_data.password = hashPassword
+    const user = await User.create(user_data)
 
     const basket = await Basket.create({ userDatumId: user.id })
     const favourite = await Favourite.create({ userDatumId: user.id })
-    const token = generateToken(user.id, phone, user.role)
+    const token = generateToken(user.id, user.phone, user.role)
 
     res.json({ user, token })
   } catch (error) {
@@ -116,21 +113,38 @@ export const updateUser = asyncHandler(async (req, res) => {
 
 export const updateUserPassword = asyncHandler(async (req, res) => {
   try {
-    const { password } = req.body
-    const { userId } = req.user;
+    const token = req.headers.authorization.split(' ')[1]
+    const { old_password, new_password } = req.body
+    let isValidOldPassword, isValidNewPassword
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const { phone } = decoded
 
     const user = await User.findOne({
-      where: { id: userId }
+      where: { phone }
     })
 
-    const hashPassword = await bcrypt.hash(password, quantityHashPass)
+    if (user) {
+      isValidOldPassword = bcrypt.compareSync(old_password, user.password)
+      isValidNewPassword = bcrypt.compareSync(new_password, user.password)
+    }
+    if (user && isValidOldPassword) {
+      if (isValidNewPassword) {
+        res.status(400)
+        res.json({ message: 'Новый пароль совпадает со старым', name: 'new_password' })
+      } else {
+        const hashPassword = await bcrypt.hash(new_password, quantityHashPass)
 
-    user.update({ password: hashPassword })
-
-    res.json({ message: 'Не готов' })
+        user.update({ password: hashPassword })
+        res.json({ message: 'Вы успешно сменили пароль' })
+      }
+    } else {
+      res.status(400)
+      res.json({ message: 'Старый пароль не верный', name: 'old_password' })
+    }
   } catch (error) {
     res.status(400)
-    throw new Error('Ошибка', error)
+    throw new Error(error)
   }
 })
 

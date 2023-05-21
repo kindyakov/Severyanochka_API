@@ -10,9 +10,11 @@ router.route('/register').post(registerUser)
 router.route('/profile').get(protect, profileUser)
 router.route('')
   .put(protect, updateUser)
-  // .put(protect, updateUserPassword)
   .delete(protect, deleteUser)
   .get(protect, getUsers)
+
+router.route('/password')
+  .put(protect, updateUserPassword)
 
 router.route('/admin')
   .get(roleProtect('admin'), getUserAdmin)
