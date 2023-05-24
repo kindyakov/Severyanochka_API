@@ -44,12 +44,11 @@ export const addFavouriteProduct = asyncHandler(async (req, res) => {
     })
 
     res.json(favourite_product)
-  } catch (error) { 
+  } catch (error) {
     res.status(400)
     throw new Error(error)
   }
 })
-
 
 export const getFavouriteProducts = asyncHandler(async (req, res) => {
   try {
@@ -151,7 +150,6 @@ export const getProducts = asyncHandler(async (req, res) => {
       })
       product.filter = { min, max }
     }
-
 
     res.json(product)
   } catch (error) {
