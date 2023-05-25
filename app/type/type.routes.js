@@ -1,5 +1,5 @@
 import express from 'express'
-import { createType, getTypes, deleteType, updateType, getType, deleteTypes, getTypesList, getTypeAdmin } from './type.controller.js'
+import { createType, getTypes, deleteType, updateType, getType, deleteTypes, getTypesList, getTypeAdmin, getTypeHtml } from './type.controller.js'
 import { roleProtect } from '../middleware/role.middleware.js'
 
 const router = express.Router()
@@ -8,9 +8,11 @@ router.route('/')
   .post(roleProtect('admin'), createType)
   .get(getTypes)
 
-
 router.route('/delete')
   .post(roleProtect('admin'), deleteTypes)
+
+router.route('/page/:id')
+  .get(getTypeHtml)
 
 router.route('/all')
   .get(getTypesList)

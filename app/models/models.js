@@ -79,6 +79,34 @@ const Feedback = sequelize.define('feedback_product', {
   feedback_user: { type: DataTypes.STRING, allowNull: false }
 })
 
+const Order = sequelize.define('order_data', {
+  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+  price: { type: DataTypes.DECIMAL, allowNull: false },
+  delivery_time: { type: DataTypes.STRING, allowNull: false },
+  delivery_date: { type: DataTypes.DATE, allowNull: false },
+  delivery_information: { type: DataTypes.STRING, allowNull: false },
+})
+
+const Delivery = sequelize.define('delivery_data', {
+  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+  city: { type: DataTypes.STRING, allowNull: false },
+  street: { type: DataTypes.STRING, allowNull: false },
+  house: { type: DataTypes.STRING, allowNull: false },
+  flat: { type: DataTypes.STRING, allowNull: false },
+  entrance: { type: DataTypes.STRING, allowNull: false },
+})
+
+const OrderProduct = sequelize.define('order_product', {
+  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+  count: { type: DataTypes.INTEGER, defaultValue: 1 },
+})
+
+const Аrticle = sequelize.define('article_data', {
+  id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
+  title: { type: DataTypes.STRING, allowNull: false },
+  text: { type: DataTypes.TEXT, allowNull: false }
+})
+
 // ТИПЫ связей ===========================
 
 // Связи Пользователя
@@ -133,6 +161,19 @@ BasketProduct.belongsTo(Product)
 
 Product.hasMany(FavouriteProduct) // 1 ко многим
 FavouriteProduct.belongsTo(Product)
+
+// Связи Заказа
+User.hasMany(Order) // 1 ко многим
+Order.belongsTo(User)
+
+Order.hasOne(Delivery) // 1 к 1
+Delivery.belongsTo(Order)
+
+Order.hasMany(OrderProduct) // 1 ко многим
+OrderProduct.belongsTo(Order)
+
+Product.hasMany(OrderProduct) // 1 ко многим
+OrderProduct.belongsTo(Product)
 
 export {
   User,
