@@ -81,10 +81,6 @@ const Feedback = sequelize.define('feedback_product', {
 
 const Order = sequelize.define('order_data', {
   id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
-  price: { type: DataTypes.DECIMAL, allowNull: false },
-  delivery_time: { type: DataTypes.STRING, allowNull: false },
-  delivery_date: { type: DataTypes.DATE, allowNull: false },
-  delivery_information: { type: DataTypes.STRING, allowNull: false },
 })
 
 const Delivery = sequelize.define('delivery_data', {
@@ -94,6 +90,10 @@ const Delivery = sequelize.define('delivery_data', {
   house: { type: DataTypes.STRING, allowNull: false },
   flat: { type: DataTypes.STRING, allowNull: false },
   entrance: { type: DataTypes.STRING, allowNull: false },
+  delivery_time: { type: DataTypes.STRING, allowNull: false },
+  delivery_date: { type: DataTypes.DATE, allowNull: false },
+  price: { type: DataTypes.DECIMAL, allowNull: false },
+  delivery_information: { type: DataTypes.STRING, defaultValue: 1 },
 })
 
 const OrderProduct = sequelize.define('order_product', {
@@ -187,5 +187,9 @@ export {
   Product,
   Characteristic,
   Rating,
-  Feedback
+  Feedback,
+  Order,
+  Delivery,
+  OrderProduct,
+  Аrticle,
 }

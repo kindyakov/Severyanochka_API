@@ -6,6 +6,7 @@ import productRoutes from './product/product.routes.js'
 import typeRoutes from './type/type.routes.js'
 import brandRoutes from './brand/brand.routes.js'
 import feedbackRoutes from './feedback/feedback.routes.js'
+import orderRoutes from './order/order.routes.js'
 
 const router = express.Router()
 
@@ -16,5 +17,6 @@ router.use('/product', productRoutes)
 router.use('/type', typeRoutes)
 router.use('/brand', brandRoutes)
 router.use('/feedback', feedbackRoutes)
+router.use('/order', orderRoutes)
 
 export default router
