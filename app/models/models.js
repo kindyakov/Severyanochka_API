@@ -88,8 +88,8 @@ const Delivery = sequelize.define('delivery_data', {
   city: { type: DataTypes.STRING, allowNull: false },
   street: { type: DataTypes.STRING, allowNull: false },
   house: { type: DataTypes.STRING, allowNull: false },
-  flat: { type: DataTypes.STRING, allowNull: false },
-  entrance: { type: DataTypes.STRING, allowNull: false },
+  flat: { type: DataTypes.STRING, },
+  entrance: { type: DataTypes.STRING, },
   delivery_time: { type: DataTypes.STRING, allowNull: false },
   delivery_date: { type: DataTypes.DATE, allowNull: false },
   price: { type: DataTypes.DECIMAL, allowNull: false },
@@ -104,7 +104,8 @@ const OrderProduct = sequelize.define('order_product', {
 const Аrticle = sequelize.define('article_data', {
   id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
   title: { type: DataTypes.STRING, allowNull: false },
-  text: { type: DataTypes.TEXT, allowNull: false }
+  text: { type: DataTypes.TEXT, allowNull: false },
+  img: { type: DataTypes.STRING, allowNull: false },
 })
 
 // ТИПЫ связей ===========================
@@ -169,10 +170,10 @@ Order.belongsTo(User)
 Order.hasOne(Delivery) // 1 к 1
 Delivery.belongsTo(Order)
 
-Order.hasMany(OrderProduct) // 1 ко многим
+Order.hasMany(OrderProduct, { as: 'orderProduct' }) // 1 ко многим
 OrderProduct.belongsTo(Order)
 
-Product.hasMany(OrderProduct) // 1 ко многим
+Product.hasMany(OrderProduct, { as: 'product' }) // 1 ко многим
 OrderProduct.belongsTo(Product)
 
 export {

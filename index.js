@@ -6,12 +6,13 @@ import cors from "cors";
 import fileUpload from "express-fileupload";
 import path from 'path'
 
+
 import { errorHandler } from "./app/middleware/error.middleware.js";
 import indexRouters from "./app/index.routes.js";
 
 dotenv.config()
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 9000;
 const app = express();
 const __dirname = path.resolve()
 
