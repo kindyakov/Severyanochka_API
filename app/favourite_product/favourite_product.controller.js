@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler'
-import { Favourite, FavouriteProduct, Product } from '../models/models.js'
+import { Favourite, FavouriteProduct, Product, Type } from '../models/models.js'
 import { Op } from 'sequelize';
 
 export const createFavouriteProduct = asyncHandler(async (req, res) => {
@@ -139,14 +139,16 @@ export const getProducts = asyncHandler(async (req, res) => {
           price: { [Op.between]: [--filters.min, ++filters.max], }
         },
         order: [[`${filters.sort_name}`, `${filters.sort_type}`],],
-        limit, offset
+        limit, offset,
+        include: { model: Type }
       })
       product.filter = filters
     } else {
       product = await Product.findAndCountAll({
         where: { id: { [Op.or]: arrayProductId } },
         order: [['id', 'ASC']],
-        limit, offset
+        limit, offset,
+        include: { model: Type }
       })
       product.filter = { min, max }
     }

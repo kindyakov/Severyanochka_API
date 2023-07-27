@@ -5,8 +5,6 @@ import dotenv from 'dotenv'
 import cors from "cors";
 import fileUpload from "express-fileupload";
 import path from 'path'
-
-
 import { errorHandler } from "./app/middleware/error.middleware.js";
 import indexRouters from "./app/index.routes.js";
 
@@ -48,7 +46,7 @@ const main = async () => {
 
     app.listen(PORT, () => console.log(`🚀 server start http://localhost:${PORT}`.blue.bold))
   } catch (error) {
-    console.log(error)
+    console.log('Ошибка сервера', error.message)
   }
 }
 

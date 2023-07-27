@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler'
 import path from 'path'
 import fs from 'fs'
-import { Product, Characteristic } from '../models/models.js'
+import { Product, Characteristic, Type } from '../models/models.js'
 import translit from '../translite.js'
 import { Op } from 'sequelize'
 
@@ -46,7 +46,13 @@ export const createProduct = asyncHandler(async (req, res) => {
       }
     }
 
-    res.json(product)
+    // Получение объекта Product вместе с объектом Type
+    const productWithType = await Product.findOne({
+      where: { id: product.id },
+      include: { model: Type }
+    });
+
+    res.json(productWithType)
   } catch (error) {
     res.status(400)
     throw new Error('Продукт не создан', error)
@@ -65,7 +71,8 @@ export const getProducts = asyncHandler(async (req, res) => {
       product = await Product.findAndCountAll({
         order: [
           ['id', 'ASC'],
-        ], limit, offset
+        ], limit, offset,
+        include: { model: Type }
       })
     }
     if (brandId && !typeId) {
@@ -74,7 +81,8 @@ export const getProducts = asyncHandler(async (req, res) => {
         order: [
           ['id', 'ASC'],
         ],
-        limit, offset
+        limit, offset,
+        include: { model: Type }
       })
     }
     if (!brandId && typeId && !filters) {
@@ -85,7 +93,8 @@ export const getProducts = asyncHandler(async (req, res) => {
         order: [
           ['id', 'ASC'],
         ],
-        limit, offset
+        limit, offset,
+        include: { model: Type }
       })
       product.filter = { min, max }
     }
@@ -95,7 +104,8 @@ export const getProducts = asyncHandler(async (req, res) => {
         order: [
           ['id', 'ASC'],
         ],
-        limit, offset
+        limit, offset,
+        include: { model: Type }
       })
     }
     if (filters && typeId) {
@@ -109,7 +119,8 @@ export const getProducts = asyncHandler(async (req, res) => {
         order: [
           [`${filters.sort_name}`, `${filters.sort_type}`],
         ],
-        limit, offset
+        limit, offset,
+        include: { model: Type }
       })
       product.filter = filters
     }
@@ -137,21 +148,18 @@ export const getProductsList = asyncHandler(async (req, res) => {
 })
 
 export const getProduct = asyncHandler(async (req, res) => {
-  try {
-    const { id } = req.params;
-    const product = await Product.findOne({
-      where: { id },
-      include: [{ model: Characteristic, as: 'characteristic' }]
-    })
-    if (product === null) {
-      res.json({ message: `Продукт не найден по этому ID ${id}` })
-    }
-    res.json(product)
-  } catch (error) {
-    res.status(400)
-    throw new Error('Продукт не найден', error)
+  const { id } = req.params;
+  const product = await Product.findOne({
+    where: { id },
+    include: [{ model: Characteristic, as: 'characteristic' }]
+  });
+
+  if (product === null) {
+    res.json({ message: `Продукт не найден по этому ID ${id}` });
+  } else {
+    res.json(product);
   }
-})
+});
 
 export const getProductAdmin = asyncHandler(async (req, res) => {
   try {

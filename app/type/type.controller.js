@@ -2,7 +2,6 @@ import asyncHandler from 'express-async-handler'
 import { Type } from '../models/models.js';
 import path from 'path'
 import fs from 'fs';
-import { TypePage } from './type.js';
 
 const __dirname = path.resolve()
 const pathImg = 'app/static/img/img_types'
@@ -69,21 +68,6 @@ export const getType = asyncHandler(async (req, res) => {
     })
 
     res.json(type)
-  } catch (error) {
-    res.status(400)
-    throw new Error('Тип не найден!', error)
-  }
-})
-
-export const getTypeHtml = asyncHandler(async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const type = await Type.findOne({
-      where: { id }
-    })
-
-    res.send(TypePage(type.name, type.id, 'http://localhost:3000'))
   } catch (error) {
     res.status(400)
     throw new Error('Тип не найден!', error)
