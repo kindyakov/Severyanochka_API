@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler'
-import { Order, Delivery, OrderProduct, Product } from '../models/models.js'
+import { Order, Delivery, OrderProduct, Product, Type } from '../models/models.js'
 
 export const createOrder = asyncHandler(async (req, res) => {
   try {
@@ -57,7 +57,13 @@ export const getOrders = asyncHandler(async (req, res) => {
       distinct: true,
       include: [
         { model: Delivery },
-        { model: OrderProduct, as: 'orderProduct', include: [{ model: Product, as: 'product' }] }
+        {
+          model: OrderProduct, as: 'orderProduct',
+          include: [{
+            model: Product, as: 'product',
+            include: [{ model: Type }]
+          }]
+        }
       ]
     });
 

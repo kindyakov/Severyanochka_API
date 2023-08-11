@@ -91,7 +91,7 @@ export const getTypeAdmin = asyncHandler(async (req, res) => {
     res.json(type)
   } catch (error) {
     res.status(400)
-    throw new Error('Продукт не найден', error)
+    throw new Error('Тип не найден', error)
   }
 })
 
@@ -118,7 +118,6 @@ export const deleteTypes = asyncHandler(async (req, res) => {
       const type = await Type.findOne({
         where: { id }
       })
-      await Type.destroy({ where: { id } })
 
       if (type.img) {
         if (fs.existsSync(path.resolve(__dirname, pathImg, type.img))) {
@@ -129,7 +128,15 @@ export const deleteTypes = asyncHandler(async (req, res) => {
       }
     }
 
-    res.json({ message: "Типы удалены!" })
+    const deletedType = await Type.destroy({
+      where: {
+        id: {
+          [Op.in]: idArr
+        }
+      }
+    });
+
+    res.json(deletedType)
   } catch (error) {
     res.status(400)
     throw new Error('Тип не удален', error)

@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken'
 
 const __dirname = path.resolve()
 const quantityHashPass = 5;
+const pathImg = 'app/static/img/img_users'
 
 export const loginUser = asyncHandler(async (req, res) => {
   try {
@@ -79,7 +80,7 @@ export const profileUser = asyncHandler(async (req, res) => {
   }
 })
 
-export const updateUser = asyncHandler(async (req, res) => {
+export const updateProfile = asyncHandler(async (req, res) => {
   try {
     const user_data = req.body;
     const { userId } = req.user;
@@ -108,6 +109,26 @@ export const updateUser = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(400)
     throw new Error('Ошибка', error)
+  }
+})
+
+export const updateUser = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+
+    if (req.files) {
+      const { img } = req.files;
+      img.mv(path.resolve(__dirname, pathImg, img.name))
+      data.img = JSON.stringify([img.name]);
+    }
+
+    const user = await User.update(data, { where: { id } })
+
+    res.json(user)
+  } catch (error) {
+    res.status(400)
+    throw new Error(error.message)
   }
 })
 
@@ -150,9 +171,9 @@ export const updateUserPassword = asyncHandler(async (req, res) => {
 
 export const deleteUser = asyncHandler(async (req, res) => {
   try {
-    const { userId } = req.user;
+    const { id } = req.user;
     const user = await User.findOne({
-      where: { id: userId }
+      where: { id }
     })
 
     if (!user) {
@@ -180,6 +201,27 @@ export const deleteUser = asyncHandler(async (req, res) => {
     res.status(400)
     throw new Error('Ошибка', error)
   }
+})
+
+export const deleteUsers = asyncHandler(async (req, res) => {
+  const idArr = req.body;
+
+  for (const id of idArr) {
+    const user = await User.findOne({
+      where: { id }
+    })
+    await User.destroy({ where: { id } })
+
+    if (user.img) {
+      if (fs.existsSync(path.resolve(__dirname, pathImg, user.img))) {
+        fs.unlink(path.resolve(__dirname, pathImg, user.img), (err) => {
+          if (err) throw new Error('Изображение не удалено', err)
+        })
+      }
+    }
+  }
+
+  res.json({ message: "Пользователи удалены!" })
 })
 
 export const getUsers = asyncHandler(async (req, res) => {
@@ -220,5 +262,20 @@ export const getUserAdmin = asyncHandler(async (req, res) => {
   } catch (error) {
     res.status(400)
     throw new Error('Продукт не найден', error)
+  }
+})
+
+export const getUser = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findOne({
+      where: { id }
+    })
+
+    res.json(user)
+  } catch (error) {
+    res.status(400)
+    throw new Error('Ошибка', error)
   }
 })

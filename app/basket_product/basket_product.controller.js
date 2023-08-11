@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler'
-import { Basket, BasketProduct, Product } from '../models/models.js'
+import { Basket, BasketProduct, Product, Type } from '../models/models.js'
 
 export const createBasketProduct = asyncHandler(async (req, res) => {
   try {
@@ -103,7 +103,6 @@ export const deleteBasketProducts = asyncHandler(async (req, res) => {
 export const getProducts = asyncHandler(async (req, res) => {
   try {
     const { userId } = req.user;
-    let products = []
 
     const basket = await Basket.findOne({
       where: { userDatumId: userId }
@@ -113,10 +112,13 @@ export const getProducts = asyncHandler(async (req, res) => {
       where: { basketDatumId: basket.id }
     })
 
-    for (const basket_product of basket_products) {
-      const product = await Product.findOne({ where: { id: basket_product.productId } })
-      products.push(product)
-    }
+    const productIds = basket_products.map(basket_product => basket_product.productId);
+
+    const products = await Product.findAll({
+      where: { id: productIds },
+      include: { model: Type },
+    });
+
 
     res.json(products)
   } catch (error) {
