@@ -2,9 +2,11 @@ import asyncHandler from 'express-async-handler'
 import { Type } from '../models/models.js';
 import path from 'path'
 import fs from 'fs';
+import { createProductFolder, moveImage } from '../utils/img.utils.js'
+import translit from '../translite.js'
 
 const __dirname = path.resolve()
-const pathImg = 'app/static/img/img_types'
+const imgPath = 'app/static/img/img_types'
 
 export const createType = asyncHandler(async (req, res) => {
   try {
@@ -147,23 +149,19 @@ export const updateType = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
+    const typeFolderPath = path.join(__dirname, imgPath, translit(data.name));
+
+    await createProductFolder(typeFolderPath);
 
     if (req.files) {
-      const { img } = req.files;
-      img.mv(path.resolve(__dirname, pathImg, img.name))
+      const { img } = req.files
+      await moveImage(img, path.join(typeFolderPath, img.name));
       data.img = JSON.stringify([img.name]);
-    }
+    } else data.img = ''
 
-    await Type.update(
-      data,
-      {
-        where: { id }
-      }
-    )
+    await Type.update(data, { where: { id } })
 
-    const type = await Type.findOne({
-      where: { id }
-    })
+    const type = await Type.findOne({ where: { id } })
 
     res.json(type)
   } catch (error) {

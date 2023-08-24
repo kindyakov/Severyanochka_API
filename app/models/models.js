@@ -1,9 +1,6 @@
 import sequelize from "../../sequelize.js";
 import { DataTypes } from "sequelize";
 
-// date_create: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-// date_update: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-
 const User = sequelize.define('user_data', {
   id: { type: DataTypes.BIGINT, primaryKey: true, autoIncrement: true },
   phone: { type: DataTypes.STRING, unique: true, allowNull: false, },

@@ -2,9 +2,11 @@ import asyncHandler from 'express-async-handler'
 import { Brand } from '../models/models.js';
 import path from 'path'
 import fs from 'fs';
+import { createProductFolder, moveImage } from '../utils/img.utils.js'
+import translit from '../translite.js'
 
 const __dirname = path.resolve()
-const pathImg = 'app/static/img/img_brands'
+const imgPath = 'app/static/img/img_brands'
 
 export const createBrand = asyncHandler(async (req, res) => {
   try {
@@ -113,18 +115,17 @@ export const updateBrand = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
-    if (req.files) {
-      const { img } = req.files;
-      img.mv(path.resolve(__dirname, 'app/static/img/img_brands', img.name))
-      data.img = JSON.stringify([img.name]);
-    }
+    const brandFolderPath = path.join(__dirname, imgPath, translit(data.name));
 
-    await Brand.update(
-      data,
-      {
-        where: { id }
-      }
-    )
+    await createProductFolder(brandFolderPath);
+
+    if (req.files) {
+      const { img } = req.files
+      await moveImage(img, path.join(brandFolderPath, img.name));
+      data.img = JSON.stringify([img.name]);
+    } else data.img = ''
+
+    await Brand.update(data, { where: { id } })
 
     const brand = await Brand.findOne({
       where: { id }
@@ -133,7 +134,7 @@ export const updateBrand = asyncHandler(async (req, res) => {
     res.json(brand)
   } catch (error) {
     res.status(400)
-    throw new Error('Бренд не найден!', error)
+    throw new Error('Бренд не обнавлены!', error)
   }
 })
 

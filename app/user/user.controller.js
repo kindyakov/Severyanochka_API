@@ -1,13 +1,16 @@
 import asyncHandler from 'express-async-handler'
 import bcrypt from 'bcrypt'
 import path from 'path'
+import fs from 'fs';
+import { createProductFolder, moveImage } from '../utils/img.utils.js'
+import translit from '../translite.js'
 import { User, Basket, Favourite, BasketProduct, FavouriteProduct } from '../models/models.js';
 import { generateToken } from './generate-token.js';
 import jwt from 'jsonwebtoken'
 
 const __dirname = path.resolve()
 const quantityHashPass = 5;
-const pathImg = 'app/static/img/img_users'
+const imgPath = 'app/static/img/img_users'
 
 export const loginUser = asyncHandler(async (req, res) => {
   try {
@@ -116,12 +119,15 @@ export const updateUser = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
+    const userFolderPath = path.join(__dirname, imgPath, translit(data.name));
+
+    await createProductFolder(userFolderPath);
 
     if (req.files) {
-      const { img } = req.files;
-      img.mv(path.resolve(__dirname, pathImg, img.name))
+      const { img } = req.files
+      await moveImage(img, path.join(userFolderPath, img.name));
       data.img = JSON.stringify([img.name]);
-    }
+    } else data.img = ''
 
     const user = await User.update(data, { where: { id } })
 

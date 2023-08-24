@@ -4,6 +4,8 @@ import fs from 'fs'
 import { Product, Characteristic, Type } from '../models/models.js'
 import translit from '../translite.js'
 import { Op } from 'sequelize'
+import 'colors'
+import { createProductFolder, moveImage } from '../utils/img.utils.js'
 
 const __dirname = path.resolve()
 const imgPath = 'app/static/img/img_products'
@@ -168,12 +170,12 @@ export const getProductAdmin = asyncHandler(async (req, res) => {
     limit = limit || 15;
     let offset = page * limit - limit
 
+
     const product = await Product.findAndCountAll({
-      order: [
-        [sorting.data, sorting.type],
-      ],
-      limit, offset
-    })
+      limit,
+      offset,
+      order: [[sorting.data, sorting.type]],
+    });
 
     res.json(product)
   } catch (error) {
@@ -238,32 +240,21 @@ export const updateProduct = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { img } = req.files;
     let imgNames = []
+    const imgArray = Array.isArray(img) ? img : [img]
     const productName = translit(data.name)
+    const productFolderPath = path.join(__dirname, imgPath, productName);
 
-    if (!fs.existsSync(path.join(__dirname, imgPath, productName))) {
-      fs.mkdir(path.join(__dirname, imgPath, productName),
-        err => { if (err) console.log(err) })
-    }
-    if (Array.isArray(img)) {
-      img.forEach(_img => {
-        _img.mv(path.join(__dirname, imgPath, productName, _img.name),
-          err => { if (err) console.log(err) })
-        imgNames.push(_img.name)
-      });
-      data.img = JSON.stringify(imgNames)
-    } else {
-      img.mv(path.join(__dirname, imgPath, productName, img.name),
-        err => { if (err) console.log(err) })
-      imgNames.push(img.name)
-      data.img = JSON.stringify(imgNames)
+    await createProductFolder(productFolderPath);
+
+    for (const _img of imgArray) {
+      await moveImage(_img, path.join(productFolderPath, _img.name));
+      imgNames.push(_img.name);
     }
 
-    await Product.update(
-      data,
-      {
-        where: { id }
-      }
-    )
+    data.img = JSON.stringify(imgNames)
+
+    await Product.update(data, { where: { id } })
+
     if (data.characteristic) {
       const characteristicArr = JSON.parse(data.characteristic)
       for (const obj of characteristicArr) {
@@ -281,6 +272,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
         }
       }
     }
+
     const product = await Product.findOne({
       where: { id },
       include: [{ model: Characteristic, as: 'characteristic' }]
@@ -292,3 +284,4 @@ export const updateProduct = asyncHandler(async (req, res) => {
     throw new Error('Продукт не обновлен', error)
   }
 })
+
